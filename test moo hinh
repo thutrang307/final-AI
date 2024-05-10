@@ -1,0 +1,17 @@
+
+from tensorflow.keras.models import load_model
+
+# Tải mô hình đã lưu
+loaded_model = load_model('trained_model.h5')
+
+# Sử dụng mô hình đã tải
+#-----------------------------------------------------------
+from keras.preprocessing.image import load_img, img_to_array
+import numpy as np
+test_image =load_img('ly2.jpg', target_size=(32,32))
+test_image =img_to_array(test_image)
+classes = ['áo thể dục polo-150k','áo thun cổ tròn-150k','bình giữ nhiệt-260k','bút bi-15k','dây đeo thẻ trắng-50k','dây đeo thẻ xanh-50k','ly giữ nhiệt trắng-225k','nón hiphop-100k', 'sổ lò xo-70k', 'sổ tay nhỏ-105k']
+test_image=np.expand_dims(test_image,axis=0)
+result = loaded_model.predict(test_image)
+predicted_class = classes[np.argmax(result)]
+print('Predicted class:', predicted_class)
