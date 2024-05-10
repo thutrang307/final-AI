@@ -1,0 +1,78 @@
+from tkinter import Tk, Label, Button, filedialog
+from PIL import ImageTk, Image
+from keras.models import load_model
+from keras.preprocessing.image import load_img, img_to_array
+import numpy as np
+import os
+
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
+def load_image():
+    file_path = filedialog.askopenfilename(filetypes=[("Image files", "*.jpg;*.jpeg;*.png")])
+    
+    if file_path:
+        image = Image.open(file_path)
+        image = image.resize((background_label.winfo_width(), background_label.winfo_height()))
+        
+        # Cập nhật ảnh đang tải lên trong nhãn
+        image_label.configure(image=ImageTk.PhotoImage(image))
+        image_label.image = ImageTk.PhotoImage(image)
+        
+        # Dự đoán lớp của ảnh
+        predicted_class = predict_image(file_path)
+        
+        # Hiển thị kết quả dự đoán trên nhãn
+        result_label.configure(text="Sản phẩm: " + predicted_class)
+
+def predict_image(image_path):
+    # Tải mô hình đã lưu
+    loaded_model = load_model('trained_model.h5')
+
+    # Chuẩn bị ảnh để dự đoán
+    test_image = load_img(image_path, target_size=(32, 32))
+    test_image = img_to_array(test_image)
+    test_image = test_image.reshape((1, test_image.shape[0], test_image.shape[1], test_image.shape[2]))
+    test_image = test_image.astype('float32')
+    test_image /= 255.0
+
+    # Dự đoán lớp của ảnh
+    classes = ['áo thể dục polo-150k','áo thun cổ tròn-150k','bình giữ nhiệt-260k','bút bi-15k','dây đeo thẻ trắng-50k','dây đeo thẻ xanh-50k','ly giữ nhiệt trắng-225k','nón hiphop-100k', 'sổ lò xo-70k', 'sổ tay nhỏ-105k']
+    result = loaded_model.predict(test_image)
+    predicted_class = classes[np.argmax(result)]
+    
+    return predicted_class
+
+root = Tk()
+root.title("UEHSTYLE")
+
+# Đường dẫn đến tệp tin ảnh nền
+background_image_path = "5.png"
+
+# Đường dẫn đến tệp tin logo mới
+new_logo_path = "customer.png"
+
+# Tạo đối tượng hình ảnh từ tệp tin ảnh nền
+background_image = Image.open(background_image_path)
+background_photo = ImageTk.PhotoImage(background_image)
+
+# Thay đổi biểu tượng của ứng dụng
+root.iconphoto(False, ImageTk.PhotoImage(Image.open(new_logo_path)))
+
+# Tạo nhãn để hiển thị ảnh nền
+background_label = Label(root, image=background_photo)
+background_label.grid(row=0, column=0, columnspan=2)
+
+# Tạo nhãn để hiển thị ảnh được tải lên
+image_label = Label(root)
+image_label.grid(row=1, column=0, columnspan=2)
+
+# Tạo nút "Tải ảnh lên"
+button = Button(root, text="Tải ảnh lên", command=load_image)
+button.grid(row=2, column=0, columnspan=2)
+
+# Tạo nhãn để hiển thị kết quả dự đoán
+result_label = Label(root, text="")
+result_label.grid(row=3, column=0, columnspan=2)
+
+root.mainloop()
